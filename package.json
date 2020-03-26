@@ -1,0 +1,19 @@
+{
+  "name": "db_nathbot",
+  "version": "1.0.0",
+  "description": "Un petit bot discord, mon premier",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nath54/db_nathbot.git"
+  },
+  "author": "nath54",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nath54/db_nathbot/issues"
+  },
+  "homepage": "https://github.com/nath54/db_nathbot#readme"
+}
