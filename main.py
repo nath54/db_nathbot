@@ -1,9 +1,10 @@
 #coding:utf-8
 import discord
 import io
+import lib
 
 #on recup les infos
-f=io.open("config.nath","r",encoding="utf-8")
+f=io.open("config.naths","r",encoding="utf-8")
 data=f.read().strip().split("\n")
 f.close()
 
@@ -45,6 +46,21 @@ class Bot(discord.Client):
                     await member.send(txt)
                 else:
                     await msg.channel.send("il n'y a personne ayant le nom "+cc[1]+" ici !")
+        elif(content.startswith(config["prefix"]+"+")):
+            cc=content.split(" ")
+            if(len(cc)>=2):
+                a,b=None,None
+                try:
+                    a=int(cc[1])
+                    b=int(cc[2])
+                    await msg.channel.send(cc[1]+" + "cc[2]+" = "+str(a+b))
+                except:
+                    await msg.channel.send("Eh Oh ! je ne peux qu'additionner que des nombre !, essaie de faire de l'agebre avec des aptates et des bananes !")
+        elif(content.startswith(config["prefix"]+"help")):
+            txt=lib.help()
+            await msg.send(txt)
+            
+                
 
 #on lance le programme
 if __name__== "__main__":
