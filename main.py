@@ -15,6 +15,7 @@ print(config)
 class Bot(discord.Client):
     def __init__(self):
         super().__init__()
+    
         
     async def on_ready(self):
         print("Logged in as ")
