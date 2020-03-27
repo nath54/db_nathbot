@@ -1,2 +1,6 @@
-node --experimental-modules index.js 
-read -rsp $'Press enter to continue...\n'
+git pull
+git add *
+git commit -am "aa"
+git push
+
+python main.py
