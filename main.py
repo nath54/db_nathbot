@@ -3,6 +3,7 @@ import discord
 import io
 import lib
 import random
+import time
 
 #
 debug=True
@@ -50,12 +51,20 @@ class Bot(discord.Client):
             embed.set_image(url=img)
         return embed
     
+    def censure_on_this_server(self,msg):
+        #TODO
+        return True
+    
+    
     async def on_ready(self):
+        actt=["Vous répondre"]
+        await self.change_presence(activity=discord.Game(name=actt[0]))
+        #await self.change_presence(activity=discord.CustomActivity(name=actt[0]))
         print("Logged in as ")
         print(self.user.name)
         print(self.user.id)
         print("---------")
-        for ic in [692779375367553127]:
+        for ic in [692779375367553127,693088240722378772]:
             gen=self.get_channel(ic) #get le general du server de test
             await gen.send("Ouaah, le bot nathbot est levé, il est pret a vous écouter !")
     
@@ -76,7 +85,8 @@ class Bot(discord.Client):
         ############################################### EXIT ###############################################
         elif(content.startswith(config["prefix"]+"exit")):
             #TODO
-            #exit()
+            await self.logout()
+            exit()
             pass
         ############################################### MESSAGES PRIVES ###############################################
         elif(content.startswith(config["prefix"]+"dm")):
@@ -176,14 +186,53 @@ class Bot(discord.Client):
             await msg.channel.send(invite.url)
         ############################################### INVITATIONS ###############################################                    
         elif(content.startswith(config["prefix"]+"delinvites")): 
-            invites = await message.guild.invites()
+            invites = await msg.guild.invites()
             for i in invites:
                 await i.delete()
-            
+            await msg.channel.send("Toutes les invitations ont bien été supprimées")
         ############################################### AIDE ###############################################                    
         elif(content.startswith(config["prefix"]+"help")):
             txt=lib.help()
             await msg.channel.send(txt)
+        ############################################### CENSURE ###################################################
+        if(self.censure_on_this_server(msg)):
+            bien,newmes,vulgarites=lib.testmotspasbiens(msg.content)
+            imun=False
+            #print(msg.author.roles)
+            for r in msg.author.roles:
+                if r.name in ["immunisé a nathbot"]: imun=True
+            if not imun:
+                if not bien and False:
+                    await msg.delete()
+                    mes = await msg.channel.send("Eh Oh ! Ce n'est vraiment pas bien ce que tu viens de dire la "+str(msg.author)+" !")
+                    #
+                    time.sleep(3)
+                    #
+                    await mes.edit(content="autodestruction...")
+                    time.sleep(0.5)
+                    await mes.delete()
+                    
+                if not bien and True:
+                    mes = await msg.channel.send("Pas de vulgarités !")
+                    await msg.channel.send("<@!"+str(msg.author.id)+"> a dit : "+newmes)
+                    await msg.delete()
+                    #
+                    time.sleep(3)
+                    #
+                    await mes.edit(content="autodestruction...")
+                    time.sleep(0.5)
+                    await mes.delete()
+                    #await msg.edit(content=newmes)
+            else:
+                if not bien:
+                    mes = await msg.channel.send("Vous avez de la chance d'être immunisé, car vous avez dit des mots vulgaires : "+str(vulgarites))
+                    #
+                    time.sleep(1)
+                    #
+                    await mes.edit(content="autodestruction...")
+                    time.sleep(0.5)
+                    await mes.delete()
+                
             
                 
 
