@@ -54,7 +54,9 @@ Voici une petite liste de commandes :
         -2 arguments : renvoie un nombre entre les deux nombres donnés
     - `n)invite` : crée une invitation
     - `n)delinvites` : détruit toutes les invitations
-    - ``
+    - `n)compte nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
+            ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
+            -liste: très lent, lent, moyen, rapide, très rapide
 	"""
 	return txt
 

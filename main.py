@@ -4,6 +4,7 @@ import io
 import lib
 import random
 import time
+import quickpoll
 
 #
 debug=True
@@ -79,15 +80,30 @@ class Bot(discord.Client):
         content=msg.content
         if(msg.author == self.user):
             return
+        ############################################### PETITES FUTILITES #####################################
+        
+        elif(content.lower().startswith("bonjour")): await msg.channel.send("Bonjour <@!"+str(msg.author.id)+"> !")
+        elif(content.lower().startswith("salut")): await msg.channel.send("Salut <@!"+str(msg.author.id)+"> !")
+        elif(content.lower().startswith("aurevoir")): await msg.channel.send("Aurevoir <@!"+str(msg.author.id)+"> !")
+        elif(content.lower().startswith("yo")): await msg.channel.send("Yo <@!"+str(msg.author.id)+"> !")
+        elif(content.lower().startswith("hello")): await msg.channel.send("Hello <@!"+str(msg.author.id)+"> !")
+        elif(content.lower().startswith("hi")): await msg.channel.send("Hi <@!"+str(msg.author.id)+"> !")
+        elif(content.lower().startswith("oui")): await msg.channel.send("non !")
+        elif(content.lower().startswith("non")): await msg.channel.send("oui !")
+        elif(content.lower().startswith("si")): await msg.channel.send("nan !")
+        elif(content.lower().startswith("nan")): await msg.channel.send("si !")
+        
         ############################################### PING ###############################################
-        elif(content.startswith(config["prefix"]+"ping")):
+        elif(content.startswith("ping")):
             await msg.channel.send("pong")
+            
         ############################################### EXIT ###############################################
         elif(content.startswith(config["prefix"]+"exit")):
             #TODO
             await self.logout()
             exit()
             pass
+            
         ############################################### MESSAGES PRIVES ###############################################
         elif(content.startswith(config["prefix"]+"dm")):
             cc=content.split(" ")
@@ -129,6 +145,7 @@ class Bot(discord.Client):
                 except:
                 #else:
                     await msg.channel.send("Eh Oh ! je ne peux qu'additionner que des nombre !, essaie de faire de l'algebre avec des patates et des bananes !")
+                    
         ############################################### MULTIPLICATION ###############################################
         elif(content.startswith(config["prefix"]+"*")):
             cc=content.split(" ")
@@ -143,13 +160,16 @@ class Bot(discord.Client):
                 except:
                 #else:
                     await msg.channel.send("Eh Oh ! je ne peux qu'additionner que des nombre !, essaie de faire de l'algebre avec des carotte et des chou-fleurs !")
+                    
         ############################################### BLAGUE ###############################################                    
         elif(content.startswith(config["prefix"]+"blague")): 
             await msg.channel.send( lib.blague() )
+            
         ############################################### BLAGUE ###############################################                    
         elif(content.startswith(config["prefix"]+"complimente moi")): 
             nom=str(msg.author.name)
             await msg.channel.send( lib.compliment(nom) )
+            
         ############################################### NB ALEATOIRE ###############################################                    
         elif(content.startswith(config["prefix"]+"nbalea")):
             cc=content.split(" ")
@@ -180,20 +200,46 @@ class Bot(discord.Client):
             print("titre : ",titre," description : ",description," couleur : ",couleur," image : ",image)
             embed=self.create_embed(titre=titre,description=description,color=couleur,img=image)
             await msg.channel.send(embed=embed)
+            
         ############################################### INVITATIONS ###############################################                    
         elif(content.startswith(config["prefix"]+"invite")): 
             invite = await msg.channel.create_invite(unique=False)
             await msg.channel.send(invite.url)
+            
         ############################################### INVITATIONS ###############################################                    
         elif(content.startswith(config["prefix"]+"delinvites")): 
             invites = await msg.guild.invites()
             for i in invites:
                 await i.delete()
             await msg.channel.send("Toutes les invitations ont bien été supprimées")
+            
+        ############################################### COMPTER ###############################################                    
+        elif(content.startswith(config["prefix"]+"compter")):
+            cc=content.split(" ")
+            if len(cc)>=2:
+                if True:
+                    vitesse=0.5
+                    if len(cc)>=3:
+                        if " ".join(cc[2:])=="très lent": vitesse=2
+                        elif " ".join(cc[2:])=="lent": vitesse=1
+                        elif " ".join(cc[2:])=="moyen": vitesse=0.5
+                        elif " ".join(cc[2:])=="rapide": vitesse=0.3
+                        elif " ".join(cc[2:])=="très rapide": vitesse=0.1
+                    mes = await msg.channel.send("0")
+                    arg1=int(cc[1])
+                    for x in range(0,arg1+1):
+                        await mes.edit(content="Je compte jusqu'à "+str(arg1)+ ": "+str(x))
+                        time.sleep(vitesse)
+                else:
+                    await msg.channel.send("Eh, il faut un nombre positif pour que cette commande fonctionne !")
+            else:
+                await msg.channel.send("Eh, il faut un nombre positif pour que cette commande fonctionne !")
+                
         ############################################### AIDE ###############################################                    
         elif(content.startswith(config["prefix"]+"help")):
             txt=lib.help()
             await msg.channel.send(txt)
+            
         ############################################### CENSURE ###################################################
         if(self.censure_on_this_server(msg)):
             bien,newmes,vulgarites=lib.testmotspasbiens(msg.content)
@@ -227,7 +273,7 @@ class Bot(discord.Client):
                 if not bien:
                     mes = await msg.channel.send("Vous avez de la chance d'être immunisé, car vous avez dit des mots vulgaires : "+str(vulgarites))
                     #
-                    time.sleep(1)
+                    time.sleep(3)
                     #
                     await mes.edit(content="autodestruction...")
                     time.sleep(0.5)
@@ -240,7 +286,7 @@ class Bot(discord.Client):
 if __name__== "__main__":
     bot = Bot()
     bot.run(config["token"])
-
+    quickpoll.setup(bot)
 
 
 
