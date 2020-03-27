@@ -170,8 +170,15 @@ class Bot(discord.Client):
             print("titre : ",titre," description : ",description," couleur : ",couleur," image : ",image)
             embed=self.create_embed(titre=titre,description=description,color=couleur,img=image)
             await msg.channel.send(embed=embed)
-        ############################################### AIDE ###############################################                    
+        ############################################### INVITATIONS ###############################################                    
         elif(content.startswith(config["prefix"]+"invite")): 
+            invite = await msg.channel.create_invite(unique=False)
+            await msg.channel.send(invite.url)
+        ############################################### INVITATIONS ###############################################                    
+        elif(content.startswith(config["prefix"]+"delinvites")): 
+            invites = await message.guild.invites()
+            for i in invites:
+                await i.delete()
             
         ############################################### AIDE ###############################################                    
         elif(content.startswith(config["prefix"]+"help")):
