@@ -44,28 +44,29 @@ if loadcens:
     cens.sort(key=lambda item:len(item))
     cens=cens[::-1]
 #
-def help():
+def help(prefix="n)"):
 	txt="""
 Voici une petite liste de commandes :
-    - `n)dm pseudo msg` : le bot envoie un message privé au pseudo
-    - `n)+ a b c ...` : additionne a b c ...
-    - `n)* a b c ...` : multiplie a b c ...
-    - `n)complimente moi` : vous complimente
-    - `n)blague` : fait une blague
-    - `n)nbalea`:
+    - `"""+prefix+"""dm pseudo msg` : le bot envoie un message privé au pseudo
+    - `"""+prefix+"""+ a b c ...` : additionne a b c ...
+    - `"""+prefix+"""* a b c ...` : multiplie a b c ...
+    - `"""+prefix+"""complimente moi` : vous complimente
+    - `"""+prefix+"""blague` : fait une blague
+    - `"""+prefix+"""nbalea`:
         -0 arguments : renvoie un nombre entre 1 et 10
         -1 argument : renvoie un nombre entre 1 et le nombre donné
         -2 arguments : renvoie un nombre entre les deux nombres donnés
-    - `n)invite` : crée une invitation
-    - `n)delinvites` : détruit toutes les invitations
-    - `n)compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
+    - `"""+prefix+"""invite` : crée une invitation
+    - `"""+prefix+"""delinvites` : détruit toutes les invitations
+    - `"""+prefix+"""compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
             ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
             -liste: très lent, lent, moyen, rapide, très rapide
-    - `n)calcul expression` : calcule l'expression
+    - `"""+prefix+"""calcul expression` : calcule l'expression
             ATTENTION !, faites bien attention à l'écriture de l'expression !
             Il faut bien mettre des parenthèses.
             Car il y a des problemes de priorités de calcul
-    - `n)help` : affiche l'aide
+    - `"""+prefix+"""morejokes` : Renvoie une blague , c'est en anglais, mais il y a bcp plus de blagues qu'en francais.
+    - `"""+prefix+"""help` : affiche l'aide
 	"""
 	return txt
 

@@ -7,9 +7,9 @@ import io
 import lib
 import random
 import time
-import quickpoll
+#import quickpoll
 import eval_expr
-#import openjson
+import openjson
 
 print("Librairies chargées.")
 
@@ -46,6 +46,7 @@ async def senddmmessage(msg,member,txt):
 class Bot(discord.Client):
     def __init__(self):
         super().__init__()
+        self.channels_logs=[692779375367553127,693088240722378772]
     
     
     def random_color(self):
@@ -75,9 +76,10 @@ class Bot(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print("---------")
-        for ic in [692779375367553127,693088240722378772]:
+        for ic in self.channels_logs:
             gen=self.get_channel(ic) #get le general du server de test
-            await gen.send("Ouaah, le bot nathbot est levé, il est pret a vous écouter !")
+            if gen!=None:
+                await gen.send("Ouaah, le bot nathbot est levé, il est pret a vous écouter !")
     
     async def on_new_user_in_server(self,p):
         for ic in [693029376341573722]:
@@ -88,9 +90,14 @@ class Bot(discord.Client):
     async def on_message(self,msg):
         author=msg.author
         content=msg.content
+        ############# test imunisation au bot ##############
         imun=False
-        for r in msg.author.roles:
-            if r.name in ["immunisé a nathbot"]: imun=True
+        try:
+            for r in msg.author.roles:
+                if r.name in ["immunisé a nathbot"]: imun=True
+        except:
+            imun=True
+            
         try:
             if(msg.author == self.user):
                 return
@@ -100,6 +107,7 @@ class Bot(discord.Client):
                 if(content.lower().startswith("bonjour")): await msg.channel.send("Bonjour <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("salut")): await msg.channel.send("Salut <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("aurevoir")): await msg.channel.send("Aurevoir <@!"+str(msg.author.id)+"> !")
+                elif(content.lower().startswith("au revoir")): await msg.channel.send("Au revoir <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("yo")): await msg.channel.send("Yo <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("hello")): await msg.channel.send("Hello <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("hi")): await msg.channel.send("Hi <@!"+str(msg.author.id)+"> !")
@@ -111,13 +119,6 @@ class Bot(discord.Client):
             ############################################### PING ###############################################
             if(content.startswith("ping")):
                 await msg.channel.send("pong")
-                
-            ############################################### EXIT ###############################################
-            elif(content.startswith(config["prefix"]+"exit")):
-                #TODO
-                await self.logout()
-                exit()
-                pass
                 
             ############################################### MESSAGES PRIVES ###############################################
             elif(content.startswith(config["prefix"]+"dm")):
@@ -257,9 +258,34 @@ class Bot(discord.Client):
                 res=eval_expr.f(ne,{})
                 await msg.channel.send("Le résultat du calcul est : "+str(res))
             ############################################### AIDE ###############################################                    
+            elif(content.startswith(config["prefix"]+"morejokes")):
+                t,b,a=openjson.more_jokes()
+                if a=="reddit":
+                    cl=colors["orange"]
+                else:
+                    cl=self.random_color()
+                description=b+"\n -from "+a
+                titre=t
+                embed=self.create_embed(titre=titre,description=description,color=cl)
+                await msg.channel.send(embed=embed)
+            ############################################### AIDE ###############################################                    
             elif(content.startswith(config["prefix"]+"help")):
-                txt=lib.help()
+                txt=lib.help(config["prefix"])
                 await msg.channel.send(txt)
+            ############################################### EXIT ###############################################
+            elif(content.startswith(config["prefix"]+"exit")):
+                if msg.author.name=="nath54":
+                    for ic in self.channels_logs:
+                        gen=self.get_channel(ic) #get le general du server de test
+                        if gen!=None:
+                            await gen.send("Catastrophe ! le bot nathbot va se rendormir, espérons qu'il va vite revenir parmis nous !")
+                    
+                    await self.logout()
+                    await self.close()
+                    #exit()
+                else:
+                    await msg.channel.send("Eh, vous ne pouvez pas éteindre le bot comme ca, y a que son créateur qui peut le faire !")
+                    
                 
             ############################################### CENSURE ###################################################
             if(self.censure_on_this_server(msg)):
@@ -296,7 +322,7 @@ class Bot(discord.Client):
                         time.sleep(0.5)
                         await mes.delete()
         except Exception as e:
-            msg.channel.send("Error : "+str(e))                
+            await msg.channel.send("Error : "+str(e))                
             
                 
 
@@ -305,7 +331,7 @@ print("Démarage du bot...")
 if __name__== "__main__":
     bot = Bot()
     bot.run(config["token"])
-    quickpoll.setup(bot)
+    #quickpoll.setup(bot)
 
 
 
