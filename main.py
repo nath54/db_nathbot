@@ -10,6 +10,8 @@ import time
 #import quickpoll
 import eval_expr
 import openjson
+import aiohttp
+
 
 print("Librairies chargées.")
 
@@ -46,8 +48,19 @@ async def senddmmessage(msg,member,txt):
 class Bot(discord.Client):
     def __init__(self):
         super().__init__()
-        self.channels_logs=[692779375367553127,693088240722378772]
-    
+        self.channels_logs=[]
+        self.channels_immunisees=[]
+        self.file_save="save.nath"
+        self.cac="\n"
+        self.ccac="|||||"
+        self.cacc="@@@@@"
+        self.data_cartes=[
+                    ["as de coeur","c_as.png"],["2 de coeur","c_2.png"],["3 de coeur","c_3.png"],["4 de coeur","c_4.png"],["5 de coeur","c_5.png"],["6 de coeur","c_6.png"],["7 de coeur","c_7.png"],["8 de coeur","c_8.png"],["9 de coeur","c_9.png"],["10 de coeur","c_10.png"],["valet de coeur","c_j.png"],["dame de coeur","c_q.png"],["roi de coeur","c_k.png"],
+                    ["as de carreaux","cc_as.png"],["2 de carreaux","cc_2.png"],["3 de carreaux","cc_3.png"],["4 de carreaux","cc_4.png"],["5 de carreaux","cc_5.png"],["6 de carreaux","cc_6.png"],["7 de carreaux","cc_7.png"],["8 de carreaux","cc_8.png"],["9 de carreaux","cc_9.png"],["10 de carreaux","cc_10.png"],["valet de carreaux","cc_j.png"],["dame de carreaux","cc_q.png"],["roi de carreaux","cc_k.png"],
+                    ["as de pique","p_as.png"],["2 de pique","p_2.png"],["3 de pique","p_3.png"],["4 de pique","p_4.png"],["5 de pique","p_5.png"],["6 de pique","p_6.png"],["7 de pique","p_7.png"],["8 de pique","p_8.png"],["9 de pique","p_9.png"],["10 de pique","p_10.png"],["valet de pique","p_j.png"],["dame de pique","p_q.png"],["roi de pique","p_k.png"],
+                    ["as de trèfle","t_as.png"],["2 de trèfle","t_2.png"],["3 de trèfle","t_3.png"],["4 de trèfle","t_4.png"],["5 de trèfle","t_5.png"],["6 de trèfle","t_6.png"],["7 de trèfle","t_7.png"],["8 de trèfle","t_8.png"],["9 de trèfle","t_9.png"],["10 de trèfle","t_10.png"],["valet de trèfle","t_j.png"],["dame de trèfle","t_q.png"],["roi de trèfle","t_k.png"],
+        ]
+        self.load_params()
     
     def random_color(self):
         hexas="0123456789abcdef"
@@ -67,6 +80,38 @@ class Bot(discord.Client):
         #TODO
         return True
     
+    def save_params(self):
+        txt=""
+        #channels d'affichage de logs
+        for c in self.channels_logs:
+            txt+=str(c)+self.cacc
+        #channels immunisées a la censure
+        for c in self.channels_immunisees:
+            txt+=str(c)+self.cacc
+        #
+        f=io.open(self.file_save,"w",encoding="utf-8")
+        f.write(txt)
+        f.close()
+    
+    def load_params(self):
+        f=io.open(self.file_save,"r",encoding="utf-8")
+        data=f.read().split(self.cac)
+        f.close()
+        #channels d'affichage de logs
+        if len(data)>0:
+            self.channels_logs=[int(c) for c in data[0].split(self.cacc) if len(c)>1]
+        #channels immunisées
+        if len(data)>1:
+            self.channels_immunisees=[int(c) for c in data[1].split(self.cacc) if len(c)>1]
+        #
+    
+    async def sens_image(self,channel,url):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    return await channel.send('Could not download file...')
+                data = io.BytesIO(await resp.read())
+                await channel.send(file=discord.File(data, 'cool_image.png'))
     
     async def on_ready(self):
         actt=["Vous répondre"]
@@ -88,6 +133,7 @@ class Bot(discord.Client):
                 
     
     async def on_message(self,msg):
+        #print("\n\n author : ",msg.author," content : ",msg.content)
         author=msg.author
         content=msg.content
         ############# test imunisation au bot ##############
@@ -183,7 +229,7 @@ class Bot(discord.Client):
                 
             ############################################### BLAGUE ###############################################                    
             elif(content.startswith(config["prefix"]+"complimente moi")): 
-                nom=str(msg.author.name)
+                nom="<@!"+str(msg.author.id)+">"
                 await msg.channel.send( lib.compliment(nom) )
                 
             ############################################### NB ALEATOIRE ###############################################                    
@@ -205,7 +251,10 @@ class Bot(discord.Client):
                         await msg.channel.send( str(random.randint(1,10)) )
                     except:
                         await msg.channel.send("il y a eu une erreur, mais qu'a tu encore fait comme bêtise ?")
-            
+            ############################################### carte ALEATOIRE ###############################################   
+            elif(content.startswith(config["prefix"]+"tirer une carte")):
+                c=random.choice(self.data_cartes)
+                await msg.channel.send(c[0],file=discord.File("./imgs/cartes/"+c[1]))
             ############################################### AIDE ###############################################                    
             elif(content.startswith(config["prefix"]+"embed")):
                 author=msg.author
@@ -268,6 +317,43 @@ class Bot(discord.Client):
                 titre=t
                 embed=self.create_embed(titre=titre,description=description,color=cl)
                 await msg.channel.send(embed=embed)
+            ############################################### IMMUNISE ###############################################                    
+            elif(content.startswith(config["prefix"]+"immunise channel")):
+                if msg.author.server_permissions.mannage_channels:
+                    if not msg.channel.id in self.channel_immunisees:
+                        self.channel_immunisees.append(msg.channel.id)
+                        await msg.channel.send("Ce canal texte est maintenant immunisé à nathbot.")
+                    else:
+                        await msg.channel.send("Ce canal texte est déjà immunisé à nathbot !")
+                else:
+                    await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
+                self.save_params()
+            ############################################### IMMUNISE ###############################################                    
+            elif(content.startswith(config["prefix"]+"stop immunise channel")):
+                if msg.author.server_permissions.mannage_channels:
+                    if not msg.channel.id in self.channel_immunisees:
+                        await msg.channel.send("Ce canal texte n'est pas immunisé à nathbot !")
+                    else:
+                        del(self.channel_immunisees[msg.channel.id])
+                        await msg.channel.send("Ce canal texte n'est maintenant plus immunisé à nathbot.")
+                else:
+                    await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
+                self.save_params()
+            ############################################### save ###############################################                    
+            elif(content.startswith(config["prefix"]+"debuginfos")):
+                if msg.author.name=="nath54":
+                    await msg.channel.send("channels immunisees : "+str(self.channels_immunisees))
+                    await msg.channel.send("channels logs : "+str(self.channels_logs))
+            ############################################### save ###############################################                    
+            elif(content.startswith(config["prefix"]+"save")):
+                if msg.author.name=="nath54":
+                    self.save_params()
+                    await msg.channel.send("Les paramètres du bot ont été sauvegardés")
+            ############################################### save ###############################################                    
+            elif(content.startswith(config["prefix"]+"load")):
+                if msg.author.name=="nath54":
+                    self.load_params()
+                    await msg.channel.send("Les paramètres du bot ont été chargés")
             ############################################### AIDE ###############################################                    
             elif(content.startswith(config["prefix"]+"help")):
                 txt=lib.help(config["prefix"])

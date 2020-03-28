@@ -46,27 +46,34 @@ if loadcens:
 #
 def help(prefix="n)"):
 	txt="""
-Voici une petite liste de commandes :
-    - `"""+prefix+"""dm pseudo msg` : le bot envoie un message privé au pseudo
-    - `"""+prefix+"""+ a b c ...` : additionne a b c ...
-    - `"""+prefix+"""* a b c ...` : multiplie a b c ...
-    - `"""+prefix+"""complimente moi` : vous complimente
-    - `"""+prefix+"""blague` : fait une blague
-    - `"""+prefix+"""nbalea`:
-        -0 arguments : renvoie un nombre entre 1 et 10
-        -1 argument : renvoie un nombre entre 1 et le nombre donné
-        -2 arguments : renvoie un nombre entre les deux nombres donnés
-    - `"""+prefix+"""invite` : crée une invitation
-    - `"""+prefix+"""delinvites` : détruit toutes les invitations
-    - `"""+prefix+"""compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
-            ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
-            -liste: très lent, lent, moyen, rapide, très rapide
-    - `"""+prefix+"""calcul expression` : calcule l'expression
+Voici une petite liste des commandes de ce bot :
+    GESTION SERVER
+        - `"""+prefix+"""dm pseudo msg` : le bot envoie un message privé au pseudo
+        - `"""+prefix+"""invite` : crée une invitation
+        - `"""+prefix+"""delinvites` : détruit toutes les invitations
+    FUN
+        - `"""+prefix+"""complimente moi` : vous complimente
+        - `"""+prefix+"""blague` : fait une blague
+        - `"""+prefix+"""morejokes` : Renvoie une blague , c'est en anglais, mais il y a bcp plus de blagues qu'en francais.
+        - `"""+prefix+"""tirer une carte` : Tire une carte aléatoire parmis un jeu de 52 cartes
+    MATHS
+        - `"""+prefix+"""+ a b c ...` : additionne a b c ...
+        - `"""+prefix+"""* a b c ...` : multiplie a b c ...
+        - `"""+prefix+"""nbalea`:
+            -0 arguments : renvoie un nombre entre 1 et 10
+            -1 argument : renvoie un nombre entre 1 et le nombre donné
+            -2 arguments : renvoie un nombre entre les deux nombres donnés
+        - `"""+prefix+"""calcul expression` : calcule l'expression
             ATTENTION !, faites bien attention à l'écriture de l'expression !
             Il faut bien mettre des parenthèses.
             Car il y a des problemes de priorités de calcul
-    - `"""+prefix+"""morejokes` : Renvoie une blague , c'est en anglais, mais il y a bcp plus de blagues qu'en francais.
-    - `"""+prefix+"""help` : affiche l'aide
+    NE SERT A RIEN
+        - `"""+prefix+"""compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
+            ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
+            -liste: très lent, lent, moyen, rapide, très rapide
+    AUTRE
+        - `"""+prefix+"""help` : affiche l'aide
+    
 	"""
 	return txt
 
@@ -108,33 +115,22 @@ def testmotspasbiens(content):
     newmes=content
     bien=True
     vulgarites=[]
-    if False: #methode 1
-        cont=content.split(" ")
-        for c in cont:
-            #print(c)
-            if c.lower().strip() in cens:
-                vulgarites.append(c)
-                #print("mot pas bien détécté : ",c)
-                bien=False
-                nt="".join(["*" for lettre in c])
-                newmes=nt.join(newmes.split(c))
-                #print("new message : ",newmes)
-    elif True: #methode 2
+    if True:
         cont=content.lower()
         for c in cens:
             cond=True
             ctc=cont.split(c)
             if len(ctc)>=2:
-                #print(c)
+                print(c)
                 for x in range(len(ctc)-1):
                     c1=ctc[x]
                     if c1!="" and c1[-1] in lets:
-                        #print("c1 : ",c1)
+                        print("c1 : ",c1)
                         cond=False
                     if x<len(ctc)-2:
                         c2=ctc[x+1]
                         if c2[0] in lets:
-                            #print("c2 : ",c2)
+                            print("c2 : ",c2)
                             cond=False
                     
                 
