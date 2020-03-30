@@ -11,7 +11,9 @@ import time
 import eval_expr
 import openjson
 import aiohttp
+from googletrans import Translator
 
+gtrans=Translator()
 
 print("Librairies chargées.")
 
@@ -76,9 +78,8 @@ class Bot(discord.Client):
             embed.set_image(url=img)
         return embed
     
-    def censure_on_this_server(self,msg):
-        #TODO
-        return True
+    def channel_is_immunisee(self,msg):
+        return msg.channel.id in self.channels_immunisees
     
     def save_params(self):
         txt=""
@@ -99,10 +100,10 @@ class Bot(discord.Client):
         f.close()
         #channels d'affichage de logs
         if len(data)>0:
-            self.channels_logs=[int(c) for c in data[0].split(self.cacc) if len(c)>1]
+            self.channels_logs=list(set([int(c) for c in data[0].split(self.cacc) if len(c)>1]))
         #channels immunisées
         if len(data)>1:
-            self.channels_immunisees=[int(c) for c in data[1].split(self.cacc) if len(c)>1]
+            self.channels_immunisees=list(set([int(c) for c in data[1].split(self.cacc) if len(c)>1]))
         #
     
     async def sens_image(self,channel,url):
@@ -137,7 +138,7 @@ class Bot(discord.Client):
         author=msg.author
         content=msg.content
         ############# test imunisation au bot ##############
-        imun=False
+        imun=self.channel_is_immunisee(msg)
         try:
             for r in msg.author.roles:
                 if r.name in ["immunisé a nathbot"]: imun=True
@@ -150,7 +151,9 @@ class Bot(discord.Client):
             ############################################### PETITES FUTILITES #####################################
             
             if not imun:
-                if(content.lower().startswith("bonjour")): await msg.channel.send("Bonjour <@!"+str(msg.author.id)+"> !")
+                ############################################### PING ###############################################
+                if(content.lower().startswith("ping")): await msg.channel.send("pong")
+                elif(content.lower().startswith("bonjour")): await msg.channel.send("Bonjour <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("salut")): await msg.channel.send("Salut <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("aurevoir")): await msg.channel.send("Aurevoir <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("au revoir")): await msg.channel.send("Au revoir <@!"+str(msg.author.id)+"> !")
@@ -162,10 +165,15 @@ class Bot(discord.Client):
                 elif(content.lower().startswith("si")): await msg.channel.send("nan !")
                 elif(content.lower().startswith("nan")): await msg.channel.send("si !")
             
-            ############################################### PING ###############################################
-            if(content.startswith("ping")):
-                await msg.channel.send("pong")
-                
+            ############################################### GET HELP ##############################################
+            
+            #print(content)
+            try:
+                if len(content.split("<@&"+str(self.user.id)+">"))>=2 or len(content.split("<@!"+str(self.user.id)+">"))>=2:
+                    await msg.channel.send("Vous m'avez mentionné ?\nAussi, voici une commande qui peut vous aider ;) `"+config["prefix"]+"help`")
+            except Exception as e:
+                print(e)
+            
             ############################################### MESSAGES PRIVES ###############################################
             elif(content.startswith(config["prefix"]+"dm")):
                 cc=content.split(" ")
@@ -271,7 +279,7 @@ class Bot(discord.Client):
                 invite = await msg.channel.create_invite(unique=False)
                 await msg.channel.send(invite.url)
                 
-            ############################################### INVITATIONS ###############################################                    
+            ############################################### del INVITATIONS ###############################################                    
             elif(content.startswith(config["prefix"]+"delinvites")): 
                 invites = await msg.guild.invites()
                 for i in invites:
@@ -299,14 +307,14 @@ class Bot(discord.Client):
                         await msg.channel.send("Eh, il faut un nombre positif pour que cette commande fonctionne !")
                 else:
                     await msg.channel.send("Eh, il faut un nombre positif pour que cette commande fonctionne !")
-            ############################################### AIDE ###############################################                    
+            ############################################### calcul ###############################################                    
             elif(content.startswith(config["prefix"]+"calcul ")):
                 expr=content[len(config["prefix"]+"calcul "):]
                 e=eval_expr.convert(expr)
                 ne=eval_expr.traite1(e)
                 res=eval_expr.f(ne,{})
                 await msg.channel.send("Le résultat du calcul est : "+str(res))
-            ############################################### AIDE ###############################################                    
+            ############################################### more jokes ###############################################                    
             elif(content.startswith(config["prefix"]+"morejokes")):
                 t,b,a=openjson.more_jokes()
                 if a=="reddit":
@@ -317,11 +325,53 @@ class Bot(discord.Client):
                 titre=t
                 embed=self.create_embed(titre=titre,description=description,color=cl)
                 await msg.channel.send(embed=embed)
+            ############################################### more jokes ###############################################                    
+            elif(content.startswith(config["prefix"]+"trans")):
+                arg1=""
+                arg2=""
+                source=""
+                destination=""
+                txtt=""
+                
+                i1=content.find("<")+1
+                #print("i1 : ",i1)
+                if i1!=-1:
+                    i2=content.find(">",i1)
+                    #print("i2 : ",i2)
+                    if i2!=-1:
+                        arg1=content[i1:i2]
+                        txtt=content[i2+1:]
+                        i3=content.find("<",i2)+1
+                        #print("i3 : ",i3)
+                        if i3!=-1:
+                            i4=content.find(">",i3)
+                            #print("i4 : ",i4)
+                            if i4!=-1:
+                                arg2=content[i3:i4]
+                                txtt=content[i4+1:]
+                if arg1!="" and arg2=="":
+                    destination=arg1
+                elif arg1!="" and arg2!="":
+                    source=arg1
+                    destination=arg2
+                print("arg1 : ",arg1)
+                print("arg2 : ",arg2)
+                print("source : ",source)
+                print("destination : ",destination)
+                print("txtt : ",txtt)
+                if txtt!="" and destination!="" and source!="":
+                    t=gtrans.translate(txtt,src=source,dest=destination)
+                    await msg.channel.send("Traduction : "+t.text)
+                elif txtt!="" and destination!="":
+                    t=gtrans.translate(txtt,dest=destination)
+                    await msg.channel.send("Traduction : "+t.text)
+                else:
+                    await msg.channel.send("Vous utilisez mal la commande !")
             ############################################### IMMUNISE ###############################################                    
             elif(content.startswith(config["prefix"]+"immunise channel")):
-                if msg.author.server_permissions.mannage_channels:
-                    if not msg.channel.id in self.channel_immunisees:
-                        self.channel_immunisees.append(msg.channel.id)
+                if True:#msg.author.server_permissions.mannage_channels:
+                    if not msg.channel.id in self.channels_immunisees:
+                        self.channels_immunisees.append(msg.channel.id)
                         await msg.channel.send("Ce canal texte est maintenant immunisé à nathbot.")
                     else:
                         await msg.channel.send("Ce canal texte est déjà immunisé à nathbot !")
@@ -330,11 +380,11 @@ class Bot(discord.Client):
                 self.save_params()
             ############################################### IMMUNISE ###############################################                    
             elif(content.startswith(config["prefix"]+"stop immunise channel")):
-                if msg.author.server_permissions.mannage_channels:
-                    if not msg.channel.id in self.channel_immunisees:
+                if True:#msg.author.server_permissions.mannage_channels:
+                    if not msg.channel.id in self.channels_immunisees:
                         await msg.channel.send("Ce canal texte n'est pas immunisé à nathbot !")
                     else:
-                        del(self.channel_immunisees[msg.channel.id])
+                        del(self.channels_immunisees[self.channels_immunisees.index(msg.channel.id)])
                         await msg.channel.send("Ce canal texte n'est maintenant plus immunisé à nathbot.")
                 else:
                     await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
@@ -374,7 +424,7 @@ class Bot(discord.Client):
                     
                 
             ############################################### CENSURE ###################################################
-            if(self.censure_on_this_server(msg)):
+            if(not imun):
                 bien,newmes,vulgarites=lib.testmotspasbiens(msg.content)
                 if not imun:
                     if not bien and False:
@@ -409,6 +459,7 @@ class Bot(discord.Client):
                         await mes.delete()
         except Exception as e:
             await msg.channel.send("Error : "+str(e))                
+            print(e)
             
                 
 

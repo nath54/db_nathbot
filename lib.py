@@ -51,6 +51,8 @@ Voici une petite liste des commandes de ce bot :
         - `"""+prefix+"""dm pseudo msg` : le bot envoie un message privé au pseudo
         - `"""+prefix+"""invite` : crée une invitation
         - `"""+prefix+"""delinvites` : détruit toutes les invitations
+        - `"""+prefix+"""immunise channel` : immunise le canal texte à la censure de vulgarité de nathbot
+        - `"""+prefix+"""stop immunise channel` : n'immunise plus le canal texte à la censure de vulgarité de nathbot
     FUN
         - `"""+prefix+"""complimente moi` : vous complimente
         - `"""+prefix+"""blague` : fait une blague
@@ -67,6 +69,9 @@ Voici une petite liste des commandes de ce bot :
             ATTENTION !, faites bien attention à l'écriture de l'expression !
             Il faut bien mettre des parenthèses.
             Car il y a des problemes de priorités de calcul
+    LANGUES
+        - `"""+prefix+"""trans <destination> texte a traduire`
+        ou bien `"""+prefix+"""trans <src> <destination> texte a traduire`: Utilise l'API google traduction pour traduire votre texte
     NE SERT A RIEN
         - `"""+prefix+"""compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
             ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
@@ -118,23 +123,26 @@ def testmotspasbiens(content):
     if True:
         cont=content.lower()
         for c in cens:
-            cond=True
-            ctc=cont.split(c)
-            if len(ctc)>=2:
-                print(c)
-                for x in range(len(ctc)-1):
-                    c1=ctc[x]
-                    if c1!="" and c1[-1] in lets:
-                        print("c1 : ",c1)
-                        cond=False
-                    if x<len(ctc)-2:
-                        c2=ctc[x+1]
-                        if c2[0] in lets:
-                            print("c2 : ",c2)
-                            cond=False
+            if c!=cont:
+                cond=False
+                ctc=cont.split(c)
+                if len(ctc)>=2:
+                    #print("cont : ",cont)
+                    #print("c : ",c)
+                    for x in range(len(ctc)-1):
+                        cc=True
+                        c1=ctc[x]
+                        #print("c1 : '"+c1+"'")
+                        if c1!="" and c1[-1] in lets:
+                            cc=False
+                        if (x+1)<=len(ctc)-1:
+                            c2=ctc[x+1]
+                            #print("c2 : '"+c2+"'")
+                            if c2!="" and c2[0] in lets:
+                                cc=False
+                        if cc: cond=True
                     
-                
-            if len(ctc)>=2 and cond:
+            if (len(ctc)>=2 and cond) or c==cont:
                 #print(c)
                 vulgarites.append(c)
                 bien=False
