@@ -106,6 +106,40 @@ class Bot(discord.Client):
             self.channels_immunisees=list(set([int(c) for c in data[1].split(self.cacc) if len(c)>1]))
         #
     
+    async def censure(self,msg,imun):
+                bien,newmes,vulgarites=lib.testmotspasbiens(msg.content)
+                if not imun:
+                    if not bien and False:
+                        await msg.delete()
+                        mes = await msg.channel.send("Eh Oh ! Ce n'est vraiment pas bien ce que tu viens de dire la "+str(msg.author)+" !")
+                        #
+                        time.sleep(3)
+                        #
+                        await mes.edit(content="autodestruction...")
+                        time.sleep(0.5)
+                        await mes.delete()
+                        
+                    if not bien and True:
+                        mes = await msg.channel.send("Pas de vulgarités !")
+                        await msg.channel.send("<@!"+str(msg.author.id)+"> a dit : "+newmes)
+                        await msg.delete()
+                        #
+                        time.sleep(3)
+                        #
+                        await mes.edit(content="autodestruction...")
+                        time.sleep(0.5)
+                        await mes.delete()
+                        #await msg.edit(content=newmes)
+                else:
+                    if not bien:
+                        mes = await msg.channel.send("Vous avez de la chance d'être immunisé, car vous avez dit des mots vulgaires : "+str(vulgarites))
+                        #
+                        time.sleep(3)
+                        #
+                        await mes.edit(content="autodestruction...")
+                        time.sleep(0.5)
+                        await mes.delete()
+    
     async def sens_image(self,channel,url):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
@@ -131,7 +165,30 @@ class Bot(discord.Client):
         for ic in [693029376341573722]:
             gen=self.get_channel(ic) #get le general du server de test
             await gen.send(embed=create_embed(self,titre=random.choice(lib.phrases_arrivees),description=p.name+" est arrivé sur ce serveur !",color=discord.Colour(int("0x000000",16)),img=p.avatar_url))
+    
+    async def on_message_edit(self,amsg,msg):
+        #print("\n\n author : ",msg.author," content : ",msg.content)
+        author=msg.author
+        content=msg.content
+        ############# test imunisation au bot ##############
+        imun=self.channel_is_immunisee(msg)
+        try:
+            for r in msg.author.roles:
+                if r.name in ["immunisé a nathbot"]: imun=True
+        except:
+            imun=True
+        
+        isbot=False
+        try:
+            if(msg.author == self.user):
+                isbot=True
                 
+            if(not imun):
+                await self.censure(msg,imun)
+
+        except Exception as e:
+            await msg.channel.send("Error : "+str(e))                
+            print(e)
     
     async def on_message(self,msg):
         #print("\n\n author : ",msg.author," content : ",msg.content)
@@ -144,13 +201,14 @@ class Bot(discord.Client):
                 if r.name in ["immunisé a nathbot"]: imun=True
         except:
             imun=True
-            
+        
+        isbot=False
         try:
             if(msg.author == self.user):
-                return
+                isbot=True
             ############################################### PETITES FUTILITES #####################################
             
-            if not imun:
+            if not imun and not isbot:
                 ############################################### PING ###############################################
                 if(content.lower().startswith("ping")): await msg.channel.send("pong")
                 elif(content.lower().startswith("bonjour")): await msg.channel.send("Bonjour <@!"+str(msg.author.id)+"> !")
@@ -164,18 +222,22 @@ class Bot(discord.Client):
                 elif(content.lower().startswith("non")): await msg.channel.send("oui !")
                 elif(content.lower().startswith("si")): await msg.channel.send("nan !")
                 elif(content.lower().startswith("nan")): await msg.channel.send("si !")
+                elif(content.lower().startswith("ah")): await msg.channel.send("B")
+                elif(content.lower().startswith("hein")): await msg.channel.send("deux")
+                elif(content.lower().startswith("ok")): await msg.channel.send("google !")
+                
             
             ############################################### GET HELP ##############################################
             
             #print(content)
             try:
-                if len(content.split("<@&"+str(self.user.id)+">"))>=2 or len(content.split("<@!"+str(self.user.id)+">"))>=2:
+                if not isbot and len(content.split("<@&"+str(self.user.id)+">"))>=2 or len(content.split("<@!"+str(self.user.id)+">"))>=2:
                     await msg.channel.send("Vous m'avez mentionné ?\nAussi, voici une commande qui peut vous aider ;) `"+config["prefix"]+"help`")
             except Exception as e:
                 print(e)
             
             ############################################### MESSAGES PRIVES ###############################################
-            elif(content.startswith(config["prefix"]+"dm")):
+            if(content.startswith(config["prefix"]+"dm") and not isbot):
                 cc=content.split(" ")
                 if(len(cc)>=2): 
                     if(len(cc)>=3): txt=" ".join(cc[2:])
@@ -204,7 +266,7 @@ class Bot(discord.Client):
                                     await msg.channel.send("Il y a eu une erreur lors de l'envoi du message à "+member.name+" :( ")
                                 
             ############################################### ADDITION ###############################################
-            elif(content.startswith(config["prefix"]+"+")):
+            elif(content.startswith(config["prefix"]+"+") and not isbot):
                 cc=content.split(" ")
                 if(len(cc)>=2):
                     try:
@@ -217,7 +279,7 @@ class Bot(discord.Client):
                         await msg.channel.send("Eh Oh ! je ne peux qu'additionner que des nombre !, essaie de faire de l'algebre avec des patates et des bananes !")
                         
             ############################################### MULTIPLICATION ###############################################
-            elif(content.startswith(config["prefix"]+"*")):
+            elif(content.startswith(config["prefix"]+"*") and not isbot):
                 cc=content.split(" ")
                 if(len(cc)>=2):
                     try:
@@ -232,16 +294,20 @@ class Bot(discord.Client):
                         await msg.channel.send("Eh Oh ! je ne peux qu'additionner que des nombre !, essaie de faire de l'algebre avec des carotte et des chou-fleurs !")
                         
             ############################################### BLAGUE ###############################################                    
-            elif(content.startswith(config["prefix"]+"blague")): 
+            elif(content.startswith(config["prefix"]+"blague") and not isbot): 
                 await msg.channel.send( lib.blague() )
-                
+            
+            ############################################### CITATION ###############################################                    
+            elif(content.startswith(config["prefix"]+"citation") and not isbot): 
+                await msg.channel.send( lib.citation() )
+            
             ############################################### BLAGUE ###############################################                    
-            elif(content.startswith(config["prefix"]+"complimente moi")): 
+            elif(content.startswith(config["prefix"]+"complimente moi") and not isbot): 
                 nom="<@!"+str(msg.author.id)+">"
                 await msg.channel.send( lib.compliment(nom) )
                 
             ############################################### NB ALEATOIRE ###############################################                    
-            elif(content.startswith(config["prefix"]+"nbalea")):
+            elif(content.startswith(config["prefix"]+"nbalea") and not isbot):
                 cc=content.split(" ")
                 if len(cc)>=3:
                     try:
@@ -260,7 +326,7 @@ class Bot(discord.Client):
                     except:
                         await msg.channel.send("il y a eu une erreur, mais qu'a tu encore fait comme bêtise ?")
             ############################################### carte ALEATOIRE ###############################################   
-            elif(content.startswith(config["prefix"]+"tirer une carte")):
+            elif(content.startswith(config["prefix"]+"tirer une carte") and not isbot):
                 c=random.choice(self.data_cartes)
                 await msg.channel.send(c[0],file=discord.File("./imgs/cartes/"+c[1]))
             ############################################### AIDE ###############################################                    
@@ -270,24 +336,24 @@ class Bot(discord.Client):
                 couleur=self.random_color()
                 description=" ".join(content.split(" ")[1:])
                 titre=author.name
-                print("titre : ",titre," description : ",description," couleur : ",couleur," image : ",image)
+                #print("titre : ",titre," description : ",description," couleur : ",couleur," image : ",image)
                 embed=self.create_embed(titre=titre,description=description,color=couleur,img=image)
                 await msg.channel.send(embed=embed)
                 
             ############################################### INVITATIONS ###############################################                    
-            elif(content.startswith(config["prefix"]+"invite")): 
+            elif(content.startswith(config["prefix"]+"invite") and not isbot): 
                 invite = await msg.channel.create_invite(unique=False)
                 await msg.channel.send(invite.url)
                 
             ############################################### del INVITATIONS ###############################################                    
-            elif(content.startswith(config["prefix"]+"delinvites")): 
+            elif(content.startswith(config["prefix"]+"delinvites") and not isbot): 
                 invites = await msg.guild.invites()
                 for i in invites:
                     await i.delete()
                 await msg.channel.send("Toutes les invitations ont bien été supprimées")
                 
             ############################################### COMPTER ###############################################                    
-            elif(content.startswith(config["prefix"]+"compter")):
+            elif(content.startswith(config["prefix"]+"compter") and not isbot):
                 cc=content.split(" ")
                 if len(cc)>=2:
                     if True:
@@ -308,7 +374,7 @@ class Bot(discord.Client):
                 else:
                     await msg.channel.send("Eh, il faut un nombre positif pour que cette commande fonctionne !")
             ############################################### calcul ###############################################                    
-            elif(content.startswith(config["prefix"]+"calcul ")):
+            elif(content.startswith(config["prefix"]+"calcul ") and not isbot):
                 expr=content[len(config["prefix"]+"calcul "):]
                 e=eval_expr.convert(expr)
                 ne=eval_expr.traite1(e)
@@ -354,11 +420,11 @@ class Bot(discord.Client):
                 elif arg1!="" and arg2!="":
                     source=arg1
                     destination=arg2
-                print("arg1 : ",arg1)
-                print("arg2 : ",arg2)
-                print("source : ",source)
-                print("destination : ",destination)
-                print("txtt : ",txtt)
+                #print("arg1 : ",arg1)
+                #print("arg2 : ",arg2)
+                #print("source : ",source)
+                #print("destination : ",destination)
+                #print("txtt : ",txtt)
                 if txtt!="" and destination!="" and source!="":
                     t=gtrans.translate(txtt,src=source,dest=destination)
                     await msg.channel.send("Traduction : "+t.text)
@@ -368,7 +434,7 @@ class Bot(discord.Client):
                 else:
                     await msg.channel.send("Vous utilisez mal la commande !")
             ############################################### IMMUNISE ###############################################                    
-            elif(content.startswith(config["prefix"]+"immunise channel")):
+            elif(content.startswith(config["prefix"]+"immunise channel") and not isbot):
                 if True:#msg.author.server_permissions.mannage_channels:
                     if not msg.channel.id in self.channels_immunisees:
                         self.channels_immunisees.append(msg.channel.id)
@@ -405,6 +471,13 @@ class Bot(discord.Client):
                     self.load_params()
                     await msg.channel.send("Les paramètres du bot ont été chargés")
             ############################################### AIDE ###############################################                    
+            elif(content.startswith(config["prefix"]+"load_datas")):
+                if msg.author.name=="nath54":
+                    lib.load_blagues()
+                    lib.load_compliments()
+                    lib.load_citations()
+                    lib.load_censure()
+            ############################################### AIDE ###############################################                    
             elif(content.startswith(config["prefix"]+"help")):
                 txt=lib.help(config["prefix"])
                 await msg.channel.send(txt)
@@ -425,38 +498,8 @@ class Bot(discord.Client):
                 
             ############################################### CENSURE ###################################################
             if(not imun):
-                bien,newmes,vulgarites=lib.testmotspasbiens(msg.content)
-                if not imun:
-                    if not bien and False:
-                        await msg.delete()
-                        mes = await msg.channel.send("Eh Oh ! Ce n'est vraiment pas bien ce que tu viens de dire la "+str(msg.author)+" !")
-                        #
-                        time.sleep(3)
-                        #
-                        await mes.edit(content="autodestruction...")
-                        time.sleep(0.5)
-                        await mes.delete()
-                        
-                    if not bien and True:
-                        mes = await msg.channel.send("Pas de vulgarités !")
-                        await msg.channel.send("<@!"+str(msg.author.id)+"> a dit : "+newmes)
-                        await msg.delete()
-                        #
-                        time.sleep(3)
-                        #
-                        await mes.edit(content="autodestruction...")
-                        time.sleep(0.5)
-                        await mes.delete()
-                        #await msg.edit(content=newmes)
-                else:
-                    if not bien:
-                        mes = await msg.channel.send("Vous avez de la chance d'être immunisé, car vous avez dit des mots vulgaires : "+str(vulgarites))
-                        #
-                        time.sleep(3)
-                        #
-                        await mes.edit(content="autodestruction...")
-                        time.sleep(0.5)
-                        await mes.delete()
+                await self.censure(msg,imun)
+
         except Exception as e:
             await msg.channel.send("Error : "+str(e))                
             print(e)

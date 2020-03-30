@@ -4,14 +4,17 @@ import random,io
 loadblgs=True
 loadcmps=True
 loadcens=True
+loadcits=True
 
 fichsb=["dj1.nath"]
 fichsc=["cmp1.nath"]
 fichcens=["motspasbiens.nath"]
+fichscits=["cits1.nath"]
 
 blgs=[]
 cmps=[]
 cens=[]
+cits=[]
 
 phrases_arrivees=["Mais qui est-ce ?","Nous avons un nouveau soldat !","Un nouvel état est déclaré !","Une nouvelle recrue a été recrutée !"]
 
@@ -20,29 +23,50 @@ lets="abcdefghiklmnopqrstuvwxyzéèçàêôûîöïûüëäâù"
 ope="/*-+%"
 par="()"
 
-#
-if loadblgs:
+def load_blagues():
+    global blgs
     blgs=[]
     for ff in fichsb:
         f=io.open(ff,"r",encoding="utf-8")
         blgs=list(set(blgs+[bb for bb in f.read().split("|||||") if len(bb)>3 ]))
         f.close()
 
-if loadcmps:
+def load_compliments():
+    global cmps
     cmps=[]
     for ff in fichsc:
         f=io.open(ff,"r",encoding="utf-8")
         cmps+=[cc for cc in f.read().split("|||||") if len(cc)>3]
         f.close()
 
-if loadcens:
+def load_citations():
+    global cits
+    cits=[]
+    for ff in fichscits:
+        f=io.open(ff,"r",encoding="utf-8")
+        cits+=[cc for cc in f.read().split("|||||") if len(cc)>3]
+        f.close()
+
+def load_censure():
+    global cens
     cens=[]
     for ff in fichcens:
         f=io.open(ff,"r",encoding="utf-8")
         cens=list(set(cens+[cc for cc in f.read().split("\n") if len(cc)>=1 ]))
         f.close()
+    cc=[]
+    for c in cens: cc.append(c+"s")
+    cens+=cc
     cens.sort(key=lambda item:len(item))
     cens=cens[::-1]
+    
+
+#
+if loadblgs: load_blagues()
+if loadcmps: load_compliments()
+if loadcits: load_citations()
+if loadcens: load_censure()
+    
 #
 def help(prefix="n)"):
 	txt="""
@@ -58,6 +82,7 @@ Voici une petite liste des commandes de ce bot :
         - `"""+prefix+"""blague` : fait une blague
         - `"""+prefix+"""morejokes` : Renvoie une blague , c'est en anglais, mais il y a bcp plus de blagues qu'en francais.
         - `"""+prefix+"""tirer une carte` : Tire une carte aléatoire parmis un jeu de 52 cartes
+        - `"""+prefix+"""citation` : renvoie une citation célèbre
     MATHS
         - `"""+prefix+"""+ a b c ...` : additionne a b c ...
         - `"""+prefix+"""* a b c ...` : multiplie a b c ...
@@ -84,38 +109,32 @@ Voici une petite liste des commandes de ce bot :
 
 def blague():
     global blgs
-    if not loadblgs:
-        blgs=[]
-        for ff in fichsb:
-            f=io.open(ff,"r",encoding="utf-8")
-            bblgs=list(set(blgs+[bb for bb in f.read().split("|||||") if len(bb)>3 ]))
-            f.close()
+    if not loadblgs: load_blaquges()
     ######################################
     txt=random.choice(blgs)
     return txt
 	
+def citation():
+    global cits
+    if not loadcits: load_citations()
+    ######################################
+    txt=random.choice(cits)
+    return txt
+	
 def compliment(n):
     global cmps
-    if not loadcmps:
-        cmps=[]
-        for ff in fichsc:
-            f=io.open(ff,"r",encoding="utf-8")
-            cmps+=[cc for cc in f.read().split("|||||") if len(cc)>3]
-            f.close()
+    if not loadcmps: load_compliments()
     ######################################
     c=random.choice(cmps)
     txt=n.join(c.split("@nom"))
     return txt
 
+
+
 def testmotspasbiens(content):
     global cens
     #print("Test ",content)
-    if not loadcens:
-        cens=[]
-        for ff in fichcens:
-            f=io.open(ff,"r",encoding="utf-8")
-            cens=list(set(cens+[cc for cc in f.read().split("\n") if len(cc)>=1 ]))
-            f.close()
+    if not loadcens: load_censure()
     #####################################
     newmes=content
     bien=True
@@ -152,4 +171,6 @@ def testmotspasbiens(content):
                 cont=newmes
                 #print(newmes)
     return bien,newmes,vulgarites
+
+
 
