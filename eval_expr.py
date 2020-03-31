@@ -94,15 +94,36 @@ def f(expr,vals):
     r=0
     if type(expr) in [tuple,list]:
         e=list(expr)
-        while len(e)>=3:
+        liste_calculs=[]
+        if len(e)>3:
+            """
+            while len(e)>=3:
+               v1=e[0]
+               v2=e[2]
+               op=e[1]
+               liste_calculs.append([v1,v2,op])
+            
+            for c in liste_calculs:
+                if c[1]=="/":
+                    c[1]="*"
+                    c[2]=[1,"/",c[2]]
+            """    
+            
+            while len(e)>=3:
+                #v1=e[0]
+                #v2=e[2]
+                #op=e[1]
+                #r=ff(v1,v2,op,vals)
+                r=f([e[0],e[1],e[2]],vals)
+                e=[r]+e[3:]
+        elif len(e)==3:
             v1=e[0]
             v2=e[2]
             op=e[1]
             r=ff(v1,v2,op,vals)
-            e=[r]+e[3:]
-        if len(e)==2 and e[0]=="-":
+        elif len(e)==2 and e[0]=="-":
             r=ff(0,e[1],"-",vals)
-        if len(e)==1:
+        elif len(e)==1:
             r=f(e[0],vals)
     elif type(expr) in [int,float]:
         r=expr

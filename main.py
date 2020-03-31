@@ -299,7 +299,7 @@ class Bot(discord.Client):
             
             ############################################### CITATION ###############################################                    
             elif(content.startswith(config["prefix"]+"citation") and not isbot): 
-                await msg.channel.send( lib.citation() )
+                await msg.channel.send( lib.citation(content[len(config["prefix"]+"citation"):]) )
             
             ############################################### BLAGUE ###############################################                    
             elif(content.startswith(config["prefix"]+"complimente moi") and not isbot): 

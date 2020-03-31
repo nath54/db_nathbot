@@ -114,11 +114,21 @@ def blague():
     txt=random.choice(blgs)
     return txt
 	
-def citation():
+def citation(search):
     global cits
     if not loadcits: load_citations()
     ######################################
-    txt=random.choice(cits)
+    if search=="": txt=random.choice(cits)
+    else:
+        search=search.lower().strip()
+        citts=[]
+        for c in cits:
+            ccc=c.lower().split(search)
+            if len(ccc)>=2: citts.append(c) #and all([len(cccc)>1 for cccc in ccc]): citts.append(c)
+        if len(citts)>0:
+            txt=random.choice(citts)
+        else:
+            txt="Il n'y a pas de résultats"
     return txt
 	
 def compliment(n):
