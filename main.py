@@ -3,16 +3,18 @@
 print("Démarage...")
 
 import discord
+from discord.ext import commands
+from discord.utils import get
+import youtube_dl
+import os
 import io
 import lib
 import random
 import time
-#import quickpoll
 import eval_expr
 import openjson
 import aiohttp
 from googletrans import Translator
-
 gtrans=Translator()
 
 print("Librairies chargées.")
@@ -33,6 +35,7 @@ data=f.read().strip().split("\n")
 f.close()
 colors=dict([tuple(  [d.split(":")[0],discord.Colour( int(d.split(":")[1], 16) )] ) for d in data])
 if debug: print(colors)
+
 
 print("Infos du bot chargées.")
 
@@ -62,7 +65,11 @@ class Bot(discord.Client):
                     ["as de pique","p_as.png"],["2 de pique","p_2.png"],["3 de pique","p_3.png"],["4 de pique","p_4.png"],["5 de pique","p_5.png"],["6 de pique","p_6.png"],["7 de pique","p_7.png"],["8 de pique","p_8.png"],["9 de pique","p_9.png"],["10 de pique","p_10.png"],["valet de pique","p_j.png"],["dame de pique","p_q.png"],["roi de pique","p_k.png"],
                     ["as de trèfle","t_as.png"],["2 de trèfle","t_2.png"],["3 de trèfle","t_3.png"],["4 de trèfle","t_4.png"],["5 de trèfle","t_5.png"],["6 de trèfle","t_6.png"],["7 de trèfle","t_7.png"],["8 de trèfle","t_8.png"],["9 de trèfle","t_9.png"],["10 de trèfle","t_10.png"],["valet de trèfle","t_j.png"],["dame de trèfle","t_q.png"],["roi de trèfle","t_k.png"],
         ]
+        #self.cartes_tarot=tarot_sign
         self.load_params()
+        self.bot_reponses=lib.load_reponses()
+        voice=None
+        self.playlists_guilds={}
     
     def random_color(self):
         hexas="0123456789abcdef"
@@ -148,6 +155,145 @@ class Bot(discord.Client):
                 data = io.BytesIO(await resp.read())
                 await channel.send(file=discord.File(data, 'cool_image.png'))
     
+    ######################################### JOIN #########################################
+    async def join(self,msg):
+        channel=msg.author.voice.channel
+        voice = get(self.voice_clients, guild=msg.guild)
+        
+        if voice and voice.is_connected():
+            await voice.move_to(channel)
+        else:
+            voice = await channel.connect()
+        """
+        #a cause d'un bug :
+        await voice.disconnect()
+        if voice and voice.is_connected():
+            await voice.move_to(channel)
+        else:
+            voice = await channel.connect()
+            if debug: print(f"The bot is connected to {channel}\n")
+        """
+        await msg.channel.send(f"The bot is connected to {channel}\n")
+    
+    ######################################### LEAVE #########################################
+    async def leave(self,msg):
+        channel=msg.author.voice.channel
+        voice = get(self.voice_clients, guild=msg.guild)
+        if voice and voice.is_connected():
+            voice.stop()
+            await voice.disconnect()
+            if debug: print(f"The bot has left {channel}\n")
+            await msg.channel.send(f"The bot has left {channel}\n")
+        else:
+            if debug: print(f"Bot was not in {channel}\n")
+            await msg.channel.send(f"Bot was not in {channel}\n")
+    ########################################### del #################################################
+    async def after_playing_song(self,msg,fich):
+        voice = get(self.voice_clients, guild=msg.guild)
+        voice.stop()
+        if len(os.listdir("songs/"))>1: os.remove(fich)
+        del(self.playlists_guilds[msg.guild][0])
+        if len(self.playlists_guilds[msg.guild])>0:
+            await self.play_current(msg,aff=False,fich=self.playlists_guilds[msg.guild][0])
+    ######################################### play current #########################################
+    async def play_current(self,msg,aff=True,fich="songs/"+random.choice(os.listdir("songs/"))):
+        voice = get(self.voice_clients, guild=msg.guild)
+        if not voice.is_playing:
+            song_there=os.path.isfile(fich)
+            if voice and voice.is_connected():
+                if song_there:
+                    if debug: print("Playing ",nname)
+                    if name=="song.mp3": await msg.channel.send("Playing last song downloaded")
+                    else: await msg.channel.send(f"Playing {nname}")
+                    dismus=discord.FFmpegPCMAudio(source="song.mp3")
+                    if msg.guild in self.playlists_guilds.keys():  self.playlists_guilds[msg.guild].append(fich)
+                    else:    self.playlists_guilds[msg.guild]=[fich]
+                    voice.play( dismus , after=lambda msg,fich:self.after_playing_song )
+                    voice.source=discord.PCMVolumeTransformer(voice.source)
+                    voice.source.volume=0.27
+                else:
+                    if aff: await msg.channel.send("There are not song currently downloaded :(")
+            else:
+                await msg.channel.send("I'm not connected !")
+        else:
+            await msg.channel.send("Already playing music, added song to playlist")
+            if msg.guild in self.playlists_guilds.keys():    self.playlists_guilds[msg.guild].append(fich)
+            else:         self.playlists_guilds[msg.guild]=[fich]
+    ######################################### play url #########################################
+    async def play_url(self,msg,url,quality="100",formate="bestaudio"):
+        voice = get(self.voice_clients, guild=msg.guild)
+        song_there=os.path.isfile("song.mp3")
+        try:
+            if song_there:
+                os.remove("song.mp3")
+                if debug: print("Removed song.mp3")
+        except Exception as e:
+            if debug: print("error while removing song.mp3 : ",e)
+            await msg.channel.send("Error")
+            return
+        
+        ydl_opts={
+            "format":formate,
+            "postprocessors":[{
+                "key":"FFmpegExtractAudio",
+                "preferredcodec":"mp3",
+                "preferredquality":quality,
+            }],
+        }
+        
+        try:
+            if voice and voice.is_connected():
+                name="song.mp3"
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    await msg.channel.send("Downloading music...")
+                    ydl.download([url])
+                
+                for fich in os.listdir("./"):
+                    if fich.endswith(".mp3"):
+                        name=fich
+                        os.rename(name,"songs/"+name)
+                nname="songs/"+name
+                await self.play_current(msg,aff=False,fich=nname)
+            else:
+                await msg.channel.send("I'm not connected !")
+        except Exception as e:
+            await msg.channel.send("Error playing music : "+str(e))
+            print("error ",e)
+                
+            
+    async def stop_playing(self,msg):
+        voice = get(self.voice_clients, guild=msg.guild)
+        voice.stop()
+        voice.is_playing=False
+        await msg.channel.send("Music has been stoped")
+        self.playlists_guilds[msg.guild]=[]
+    
+    async def pause_playing(self,msg):
+        voice = get(self.voice_clients, guild=msg.guild)
+        if not voice.is_paused():
+            voice.pause()
+            await msg.channel.send("Music has been paused")
+        else:
+            await msg.channel.send("Music is already paused")
+    
+    async def resume_playing(self,msg):
+        voice = get(self.voice_clients, guild=msg.guild)
+        if voice.is_paused():
+            voice.resume()
+            await msg.channel.send("Music has been resumed")
+        else:
+            await msg.channel.send("Music is already playing")
+            
+    async def skip_playing(self,msg):
+        voice=get(self.voice_clients, guild=msg.guild)
+        if len(self.playlists_guilds[msg.guild])>0:
+            fich=self.playlists_guilds[msg.guild][0]
+            self.after_playing_song(msg,fich)
+    
+    def show_playlist(self,msg):
+        await msg.channel.send("Votre playlist : "+",".join(self.playlists_guilds[msg.guild]))
+    
+    ######################################### ON READY #########################################
     async def on_ready(self):
         actt=["Vous répondre"]
         await self.change_presence(activity=discord.Game(name=actt[0]))
@@ -203,14 +349,20 @@ class Bot(discord.Client):
             imun=True
         
         isbot=False
-        try:
+        if True:
+        #try:
             if(msg.author == self.user):
                 isbot=True
             ############################################### PETITES FUTILITES #####################################
             
             if not imun and not isbot:
                 ############################################### PING ###############################################
-                if(content.lower().startswith("ping")): await msg.channel.send("pong")
+                for r in self.bot_reponses:
+                    if(content.lower().startswith(r[0])) and r[2]!="b":
+                        rr=str("<@!"+str(msg.author.id)+">").join(r[1].split("@nom"))
+                        await msg.channel.send(rr) 
+
+                """
                 elif(content.lower().startswith("bonjour")): await msg.channel.send("Bonjour <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("salut")): await msg.channel.send("Salut <@!"+str(msg.author.id)+"> !")
                 elif(content.lower().startswith("aurevoir")): await msg.channel.send("Aurevoir <@!"+str(msg.author.id)+"> !")
@@ -225,6 +377,9 @@ class Bot(discord.Client):
                 elif(content.lower().startswith("ah")): await msg.channel.send("B")
                 elif(content.lower().startswith("hein")): await msg.channel.send("deux")
                 elif(content.lower().startswith("ok")): await msg.channel.send("google !")
+                elif(content.lower().startswith("salam")): await msg.channel.send("Hummm, COUSCOUS MIAM MIAM !")
+                elif(content.lower().startswith("xd")): await msg.channel.send("AHHHH, c'est drole, HEEEEEEEEIIIIINNNNNN ??????")
+                """
                 
             
             ############################################### GET HELP ##############################################
@@ -236,6 +391,8 @@ class Bot(discord.Client):
             except Exception as e:
                 print(e)
             
+            ##### PING ###
+            if(content.lower().startswith("ping")): await msg.channel.send("pong")
             ############################################### MESSAGES PRIVES ###############################################
             if(content.startswith(config["prefix"]+"dm") and not isbot):
                 cc=content.split(" ")
@@ -433,6 +590,32 @@ class Bot(discord.Client):
                     await msg.channel.send("Traduction : "+t.text)
                 else:
                     await msg.channel.send("Vous utilisez mal la commande !")
+            ############################################### join ###############################################                    
+            elif(content.startswith(config["prefix"]+"join") and not isbot):
+                await self.join(msg)
+            ############################################### join ###############################################                    
+            elif(content.startswith(config["prefix"]+"leave") and not isbot):
+                await self.leave(msg)
+            ############################################### play url ###############################################                    
+            elif(content.startswith(config["prefix"]+"play_url") and not isbot):
+                url=msg.content[len(config["prefix"]+"play_url"):].strip()
+                print(url)
+                await self.play_url(msg,url)
+            ############################################### play current ###############################################                    
+            elif(content.startswith(config["prefix"]+"play_current") and not isbot):
+                await self.play_current(msg)
+            ############################################### stop ###############################################                    
+            elif(content.startswith(config["prefix"]+"stop") and not isbot):
+                await self.stop_playing(msg)
+            ############################################### pause ###############################################                    
+            elif(content.startswith(config["prefix"]+"pause") and not isbot):
+                await self.pause_playing(msg)
+            ############################################### resume ###############################################                    
+            elif(content.startswith(config["prefix"]+"resume") and not isbot):
+                await self.resume_playing(msg)
+            ############################################### show playlist ###############################################                    
+            elif(content.startswith(config["prefix"]+"show playlist") and not isbot):
+                await self.show_playlist(msg)
             ############################################### IMMUNISE ###############################################                    
             elif(content.startswith(config["prefix"]+"immunise channel") and not isbot):
                 if True:#msg.author.server_permissions.mannage_channels:
@@ -477,6 +660,7 @@ class Bot(discord.Client):
                     lib.load_compliments()
                     lib.load_citations()
                     lib.load_censure()
+                    self.bot_reponses=lib.load_reponses()
             ############################################### AIDE ###############################################                    
             elif(content.startswith(config["prefix"]+"help")):
                 txt=lib.help(config["prefix"])
@@ -500,7 +684,8 @@ class Bot(discord.Client):
             if(not imun):
                 await self.censure(msg,imun)
 
-        except Exception as e:
+        #except Exception as e:
+        else:
             await msg.channel.send("Error : "+str(e))                
             print(e)
             
@@ -511,7 +696,6 @@ print("Démarage du bot...")
 if __name__== "__main__":
     bot = Bot()
     bot.run(config["token"])
-    #quickpoll.setup(bot)
 
 
 

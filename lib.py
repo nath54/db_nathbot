@@ -1,6 +1,8 @@
 #coding:utf-8
 import random,io
 
+debug=True
+
 loadblgs=True
 loadcmps=True
 loadcens=True
@@ -59,7 +61,14 @@ def load_censure():
     cens+=cc
     cens.sort(key=lambda item:len(item))
     cens=cens[::-1]
-    
+
+def load_reponses():
+    f=io.open("reps.nath","r",encoding="utf-8")
+    data=f.read().strip().split("\n")
+    f.close()
+    bot_reponses=[tuple(d.split(":")) for d in data]
+    if debug: print(bot_reponses)    
+    return bot_reponses
 
 #
 if loadblgs: load_blagues()
@@ -97,6 +106,14 @@ Voici une petite liste des commandes de ce bot :
     LANGUES
         - `"""+prefix+"""trans <destination> texte a traduire`
         ou bien `"""+prefix+"""trans <src> <destination> texte a traduire`: Utilise l'API google traduction pour traduire votre texte
+    MUSIC
+        - `"""+prefix+"""join : le bot se connecte au salon vocal où vous êtes
+        - `"""+prefix+"""leave : le bot quitte le salon vocal
+        - `"""+prefix+"""play_url url youtube de la musique` : Va jouer la musique dans le salon vocal où est le bot
+                    ATTENTION, hébergant mon propre bot, et ayant une connection un peu pourrie, plus la musique que vous donnez au bot est longue, plus cela va prendre du temps pour la télécharger avant de la jouer, veuillez escuser mon bot.
+        - `"""+prefix+"""pause : met en pause la musique
+        - `"""+prefix+"""resume : remet en route la musique
+        - `"""+prefix+"""stop : arrete completement la musique
     NE SERT A RIEN
         - `"""+prefix+"""compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
             ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
