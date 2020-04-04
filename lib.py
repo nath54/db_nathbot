@@ -81,43 +81,37 @@ def help(prefix="n)"):
 	txt="""
 Voici une petite liste des commandes de ce bot :
     GESTION SERVER
-        - `"""+prefix+"""dm pseudo msg` : le bot envoie un message privé au pseudo
+        - `"""+prefix+"""dm pseudo msg` : message privés
         - `"""+prefix+"""invite` : crée une invitation
-        - `"""+prefix+"""delinvites` : détruit toutes les invitations
-        - `"""+prefix+"""immunise channel` : immunise le canal texte à la censure de vulgarité de nathbot
-        - `"""+prefix+"""stop immunise channel` : n'immunise plus le canal texte à la censure de vulgarité de nathbot
+        - `"""+prefix+"""delinvites` : détruit tts les invitations
+        - `"""+prefix+"""immunise channel` : canal texte plus censuré
+        - `"""+prefix+"""stop immunise channel` : canal texte censuré
     FUN
         - `"""+prefix+"""complimente moi` : vous complimente
-        - `"""+prefix+"""blague` : fait une blague
-        - `"""+prefix+"""morejokes` : Renvoie une blague , c'est en anglais, mais il y a bcp plus de blagues qu'en francais.
-        - `"""+prefix+"""tirer une carte` : Tire une carte aléatoire parmis un jeu de 52 cartes
-        - `"""+prefix+"""citation` : renvoie une citation célèbre
+        - `"""+prefix+"""blague` : blague
+        - `"""+prefix+"""morejokes` : blague (anglais)
+        - `"""+prefix+"""tirer une carte` : carte aléatoire
+        - `"""+prefix+"""citation` : citation célèbre
     MATHS
-        - `"""+prefix+"""+ a b c ...` : additionne a b c ...
-        - `"""+prefix+"""* a b c ...` : multiplie a b c ...
         - `"""+prefix+"""nbalea`:
-            -0 arguments : renvoie un nombre entre 1 et 10
-            -1 argument : renvoie un nombre entre 1 et le nombre donné
-            -2 arguments : renvoie un nombre entre les deux nombres donnés
+            -0 arguments : nombre entre 1 et 10
+            -1 argument : nombre entre 1 et le nombre donné
+            -2 arguments : nombre entre les deux nombres donnés
         - `"""+prefix+"""calcul expression` : calcule l'expression
-            ATTENTION !, faites bien attention à l'écriture de l'expression !
-            Il faut bien mettre des parenthèses.
-            Car il y a des problemes de priorités de calcul
+            ATTENTION !, il y a des problemes de priorités de calcul
     LANGUES
         - `"""+prefix+"""trans <destination> texte a traduire`
-        ou bien `"""+prefix+"""trans <src> <destination> texte a traduire`: Utilise l'API google traduction pour traduire votre texte
+        ou bien `"""+prefix+"""trans <src> <destination> texte a traduire`: traduit le texte avec google trad
     MUSIC
-        - `"""+prefix+"""join : le bot se connecte au salon vocal où vous êtes
-        - `"""+prefix+"""leave : le bot quitte le salon vocal
-        - `"""+prefix+"""play_url url youtube de la musique` : Va jouer la musique dans le salon vocal où est le bot
+        - `"""+prefix+"""join` :le bot rejoint le salon vocal
+        - `"""+prefix+"""leave` : le bot quitte le salon vocal
+        - `"""+prefix+"""play_url url youtube de la musique` : joue de la musique
                     ATTENTION, hébergant mon propre bot, et ayant une connection un peu pourrie, plus la musique que vous donnez au bot est longue, plus cela va prendre du temps pour la télécharger avant de la jouer, veuillez escuser mon bot.
-        - `"""+prefix+"""pause : met en pause la musique
-        - `"""+prefix+"""resume : remet en route la musique
-        - `"""+prefix+"""stop : arrete completement la musique
+        - `"""+prefix+"""pause` : met en pause la musique
+        - `"""+prefix+"""resume` : remet en route la musique
+        - `"""+prefix+"""stop` : arrete la musique
     NE SERT A RIEN
-        - `"""+prefix+"""compter nombre vitesse` : Compte jusqu'au nombre positif que vous avez mis à la vitesse que vous avez mit. (pas très utile, mais bon)
-            ATTENTION ! : il faut que la vitesse soit parmis la liste ci-dessus, sinon, il va prendre par défaut moyen
-            -liste: très lent, lent, moyen, rapide, très rapide
+        - `"""+prefix+"""compter nombre [lent,moyen,rapide]` : Compte jusque nombre
     AUTRE
         - `"""+prefix+"""help` : affiche l'aide
     
