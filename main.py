@@ -70,6 +70,7 @@ class Bot(discord.Client):
         self.bot_reponses=lib.load_reponses()
         voice=None
         self.playlists_guilds={}
+        self.states_bot_music={}
     
     def random_color(self):
         hexas="0123456789abcdef"
@@ -179,6 +180,8 @@ class Bot(discord.Client):
     async def leave(self,msg):
         channel=msg.author.voice.channel
         voice = get(self.voice_clients, guild=msg.guild)
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
         if voice and voice.is_connected():
             voice.stop()
             await voice.disconnect()
@@ -190,7 +193,13 @@ class Bot(discord.Client):
     ########################################### del #################################################
     async def after_playing_song(self,msg,fich):
         voice = get(self.voice_clients, guild=msg.guild)
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
         voice.stop()
+        self.states_bot_music[msg.guild]="stoped"
         if len(os.listdir("songs/"))>1: os.remove(fich)
         del(self.playlists_guilds[msg.guild][0])
         if len(self.playlists_guilds[msg.guild])>0:
@@ -198,19 +207,25 @@ class Bot(discord.Client):
     ######################################### play current #########################################
     async def play_current(self,msg,aff=True,fich="songs/"+random.choice(os.listdir("songs/"))):
         voice = get(self.voice_clients, guild=msg.guild)
-        if not voice.is_playing:
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
+        if not self.states_bot_music[msg.guild] in ["playing","resumed"]:
             song_there=os.path.isfile(fich)
             if voice and voice.is_connected():
                 if song_there:
-                    if debug: print("Playing ",nname)
-                    if name=="song.mp3": await msg.channel.send("Playing last song downloaded")
-                    else: await msg.channel.send(f"Playing {nname}")
+                    if debug: print("Playing ",fich)
+                    #if fich.ends=="song.mp3": await msg.channel.send("Playing last song downloaded")
+                    else: await msg.channel.send(f"Playing {fich}")
                     dismus=discord.FFmpegPCMAudio(source="song.mp3")
                     if msg.guild in self.playlists_guilds.keys():  self.playlists_guilds[msg.guild].append(fich)
                     else:    self.playlists_guilds[msg.guild]=[fich]
-                    voice.play( dismus , after=lambda msg,fich:self.after_playing_song )
+                    self.states_bot_music[msg.guild]="playing"
+                    voice.play( dismus , after=lambda self,msg,fich:self.after_playing_song )
                     voice.source=discord.PCMVolumeTransformer(voice.source)
-                    voice.source.volume=0.27
+                    voice.source.volume=0.35
                 else:
                     if aff: await msg.channel.send("There are not song currently downloaded :(")
             else:
@@ -222,6 +237,11 @@ class Bot(discord.Client):
     ######################################### play url #########################################
     async def play_url(self,msg,url,quality="100",formate="bestaudio"):
         voice = get(self.voice_clients, guild=msg.guild)
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
         song_there=os.path.isfile("song.mp3")
         try:
             if song_there:
@@ -263,34 +283,57 @@ class Bot(discord.Client):
             
     async def stop_playing(self,msg):
         voice = get(self.voice_clients, guild=msg.guild)
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
         voice.stop()
         voice.is_playing=False
+        self.states_bot_music[msg.guild]="stoped"
         await msg.channel.send("Music has been stoped")
         self.playlists_guilds[msg.guild]=[]
     
     async def pause_playing(self,msg):
         voice = get(self.voice_clients, guild=msg.guild)
-        if not voice.is_paused():
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
+        if not voice.is_paused() or not self.states_bot_music[msg.guild]=="paused":
             voice.pause()
+            self.states_bot_music[msg.guild]="paused"
             await msg.channel.send("Music has been paused")
         else:
             await msg.channel.send("Music is already paused")
     
     async def resume_playing(self,msg):
         voice = get(self.voice_clients, guild=msg.guild)
-        if voice.is_paused():
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
+        if voice.is_paused() or self.states_bot_music[msg.guilf]=="paused":
             voice.resume()
+            self.states_bot_music[msg.guild]="resumed"
             await msg.channel.send("Music has been resumed")
         else:
             await msg.channel.send("Music is already playing")
             
     async def skip_playing(self,msg):
         voice=get(self.voice_clients, guild=msg.guild)
+        if not msg.guild in self.states_bot_music.keys() :
+            self.states_bot_music[msg.guild]="waiting for music"
+        if voice==None:
+            await msg.channel.send("Not connected...")
+            return
         if len(self.playlists_guilds[msg.guild])>0:
             fich=self.playlists_guilds[msg.guild][0]
             self.after_playing_song(msg,fich)
     
-    def show_playlist(self,msg):
+    async def show_playlist(self,msg):
         await msg.channel.send("Votre playlist : "+",".join(self.playlists_guilds[msg.guild]))
     
     ######################################### ON READY #########################################
