@@ -38,6 +38,9 @@ class Bot(discord.Client):
     
     
     ######################################### ON READY #########################################
+
+    def channel_is_immunisee(self,msg):  return msg.channel.id in self.channels_immunisees
+
     async def on_ready(self):
         actt=["Vous répondre"]
         await self.change_presence(activity=discord.Game(name=actt[0]))

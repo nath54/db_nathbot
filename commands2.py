@@ -145,7 +145,7 @@ async def immunise_channel(bot,msg):
             await msg.channel.send("Ce canal texte est déjà immunisé à nathbot !")
     else:
         await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
-    bot.save_params()
+    save_params(bot)
 ################################################################################ STOP IMMUNISE CHANNEL ################################################################################
 async def stop_immunise_channel(bot,msg):
     if True:#msg.author.server_permissions.mannage_channels:
@@ -156,7 +156,7 @@ async def stop_immunise_channel(bot,msg):
             await msg.channel.send("Ce canal texte n'est maintenant plus immunisé à nathbot.")
     else:
         await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
-    bot.save_params()
+    save_params(bot)
 ################################################################################ MESSAGE_ON ################################################################################
 async def message_on(bot,msg):
     author=msg.author
@@ -242,7 +242,7 @@ async def message_on(bot,msg):
         elif(content.startswith(config["prefix"]+"play_current") and not isbot):
             await play_current(bot,msg)
         ############# MUSIC : stop playing music ##############
-        elif(content.startswith(config["prefix"]+"stop") and not isbot):
+        elif(content.startswith(config["prefix"]+"stop music") and not isbot):
             await stop_playing(bot,msg)
         ############# MUSIC : pause music ##############
         elif(content.startswith(config["prefix"]+"pause") and not isbot):

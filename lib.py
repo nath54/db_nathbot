@@ -109,7 +109,7 @@ Voici une petite liste des commandes de ce bot :
                     ATTENTION, hébergant mon propre bot, et ayant une connection un peu pourrie, plus la musique que vous donnez au bot est longue, plus cela va prendre du temps pour la télécharger avant de la jouer, veuillez escuser mon bot.
         - `"""+prefix+"""pause` : met en pause la musique
         - `"""+prefix+"""resume` : remet en route la musique
-        - `"""+prefix+"""stop` : arrete la musique
+        - `"""+prefix+"""stop music` : arrete la musique
     NE SERT A RIEN
         - `"""+prefix+"""compter nombre [lent,moyen,rapide]` : Compte jusque nombre
     AUTRE

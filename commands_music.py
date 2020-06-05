@@ -77,7 +77,7 @@ async def play_current(bot,msg,aff=True,fich=None):
     if voice==None:
         await msg.channel.send("Not connected...")
         return
-    if not bot.states_bot_music[msg.guild] in ["playing","resumed"]:
+    if not bot.states_bot_music[msg.guild] in ["playing","resumed"] or True:
         song_there=os.path.isfile(fich)
         if voice and voice.is_connected():
             if song_there:
