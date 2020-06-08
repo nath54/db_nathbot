@@ -71,10 +71,12 @@ def load_reponses():
     return bot_reponses
 
 #
+print("Chargement des infos du bot...")
 if loadblgs: load_blagues()
 if loadcmps: load_compliments()
 if loadcits: load_citations()
 if loadcens: load_censure()
+print("Infos du bot chargées.")
     
 #
 def help(prefix="n)"):
@@ -106,7 +108,7 @@ Voici une petite liste des commandes de ce bot :
         - `"""+prefix+"""join` :le bot rejoint le salon vocal
         - `"""+prefix+"""leave` : le bot quitte le salon vocal
         - `"""+prefix+"""play_url url youtube de la musique` : joue de la musique
-                    ATTENTION, hébergant mon propre bot, et ayant une connection un peu pourrie, plus la musique que vous donnez au bot est longue, plus cela va prendre du temps pour la télécharger avant de la jouer, veuillez escuser mon bot.
+                    ATTENTION, ne donnez pas une musique trop longue, sinon, elle prendra du temps a charger
         - `"""+prefix+"""pause` : met en pause la musique
         - `"""+prefix+"""resume` : remet en route la musique
         - `"""+prefix+"""stop music` : arrete la musique

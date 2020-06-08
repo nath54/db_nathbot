@@ -1,17 +1,15 @@
 #coding:utf-8
 
-#print("Démarage...")
+print("Démarage...")
 
 from commands2 import *
 
-#print("Librairies chargées.")
+print("Librairies chargées.")
 
-#print("Chargement des infos du bot...")
+#
 #
 
-
-
-#print("Infos du bot chargées.")
+#
 
 #class bot
 class Bot(discord.Client):
