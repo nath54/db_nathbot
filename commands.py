@@ -61,6 +61,7 @@ def load_params(bot):
     #
 
 async def censure(bot,msg,imun):
+    return 0
     bien,newmes,vulgarites=lib.testmotspasbiens(msg.content)
     if not imun:
         if not bien and False:

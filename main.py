@@ -65,17 +65,17 @@ class Bot(discord.Client):
         imun=self.channel_is_immunisee(msg)
         try:
             for r in msg.author.roles:
-                if r.name in ["immunisé a nathbot"]: imun=True
+                if r.name in ["immunisé a nathbot"]: imun=False
         except:
-            imun=True
+            imun=False
         
         isbot=False
         try:
             if(msg.author == self.user):
                 isbot=True
                 
-            if(not imun):
-                await self.censure(msg,imun)
+            if(imun):
+                await censure(bot,msg,imun)
 
         except Exception as e:
             await msg.channel.send("Error : "+str(e))                

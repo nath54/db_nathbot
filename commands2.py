@@ -136,24 +136,24 @@ async def trans(bot,msg):
     else:
         await msg.channel.send("Vous utilisez mal la commande !")
 ################################################################################ IMMUNISE CHANNEL ################################################################################
-async def immunise_channel(bot,msg):
+async def censure_channel(bot,msg):
     if True:#msg.author.server_permissions.mannage_channels:
         if not msg.channel.id in bot.channels_immunisees:
             bot.channels_immunisees.append(msg.channel.id)
-            await msg.channel.send("Ce canal texte est maintenant immunisé à nathbot.")
+            await msg.channel.send("Ce canal texte est maintenant censuré par nathbot.")
         else:
-            await msg.channel.send("Ce canal texte est déjà immunisé à nathbot !")
+            await msg.channel.send("Ce canal texte est déjà censuré par nathbot !")
     else:
         await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
     save_params(bot)
 ################################################################################ STOP IMMUNISE CHANNEL ################################################################################
-async def stop_immunise_channel(bot,msg):
+async def stop_censure_channel(bot,msg):
     if True:#msg.author.server_permissions.mannage_channels:
         if not msg.channel.id in bot.channels_immunisees:
-            await msg.channel.send("Ce canal texte n'est pas immunisé à nathbot !")
+            await msg.channel.send("Ce canal texte n'est pas censuré par nathbot !")
         else:
             del(bot.channels_immunisees[bot.channels_immunisees.index(msg.channel.id)])
-            await msg.channel.send("Ce canal texte n'est maintenant plus immunisé à nathbot.")
+            await msg.channel.send("Ce canal texte n'est maintenant plus censuré par nathbot.")
     else:
         await msg.channel.send("Vous n'avez pas les permissions d'effectuer une telle tache, sous fifre !")
     save_params(bot)
@@ -167,9 +167,9 @@ async def message_on(bot,msg):
         imun=channel_is_immunisee(bot,msg)
         try:
             for r in msg.author.roles:
-                if r.name in ["immunisé a nathbot"]: imun=True
+                if r.name in ["immunisé a nathbot"]: imun=False
         except:
-            imun=True
+            imun=False
         ############# test est le bot ##############
         isbot=False
         if(msg.author == bot.user):  isbot=True
@@ -254,11 +254,11 @@ async def message_on(bot,msg):
         elif(content.startswith(config["prefix"]+"show playlist") and not isbot):
             await show_playlist(bot,msg)
         ############# IMMUNISE #############                    
-        elif(content.startswith(config["prefix"]+"immunise channel") and not isbot):
-            await immunise_channel(bot,msg)
+        elif(content.startswith(config["prefix"]+"censure") and not isbot):
+            await censure_channel(bot,msg)
         ############# STOP IMMUNISE #############                    
-        elif(content.startswith(config["prefix"]+"stop immunise channel")):
-            await stop_immunise_channel(bot,msg)
+        elif(content.startswith(config["prefix"]+"stop censure")):
+            await stop_censure_channel(bot,msg)
         ############# debug infos #############                    
         elif(content.startswith(config["prefix"]+"debuginfos")):
             if msg.author.name=="nath54":
@@ -301,7 +301,7 @@ async def message_on(bot,msg):
             else:
                 await msg.channel.send("Eh, vous ne pouvez pas éteindre le bot comme ca, y a que son créateur qui peut le faire !")
         ############# CENSURE #############
-        if(not imun):
+        if(imun):
             await censure(bot,msg,imun)
     #except Exception as e:
     else:

@@ -86,8 +86,8 @@ Voici une petite liste des commandes de ce bot :
         - `"""+prefix+"""dm pseudo msg` : message privés
         - `"""+prefix+"""invite` : crée une invitation
         - `"""+prefix+"""delinvites` : détruit tts les invitations
-        - `"""+prefix+"""immunise channel` : canal texte plus censuré
-        - `"""+prefix+"""stop immunise channel` : canal texte censuré
+        - `"""+prefix+"""censure` : canal texte censuré
+        - `"""+prefix+"""stop censure` : canal texte plus censuré
     FUN
         - `"""+prefix+"""complimente moi` : vous complimente
         - `"""+prefix+"""blague` : blague

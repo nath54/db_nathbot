@@ -13,6 +13,7 @@ import openjson
 import aiohttp
 from essentials import *
 
+
 async def join(bot,msg):
     channel=msg.author.voice.channel
     voice = get(bot.voice_clients, guild=msg.guild)
